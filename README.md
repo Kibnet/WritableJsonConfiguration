@@ -12,12 +12,28 @@
 ![Nuget](https://img.shields.io/nuget/dt/WritableJsonConfiguration?label=Nuget%20Downloads)
 
 ## What is it?
-Source of configurations in JSON format with the ability to edit values directly from the running application. Based on Microsoft.Extensions.Configuration.
+If you want to add a settings to your app and you like json, then this is what you need. This uses the standard interface for working with settings, which is provided by Microsoft.Extensions.Configuration. To do this, we added methods for changing values in settings via the standard interface, which will edit the json file themselves.
 
 ## How to use?
-- Add [Nuget Package](https://www.nuget.org/packages/WritableJsonConfiguration/ "Nuget Package") in your project:
+- Add [Nuget Package](https://www.nuget.org/packages/WritableJsonConfiguration/) in your project:
 ```
-    Install-Package WritableJsonConfiguration
+Install-Package WritableJsonConfiguration
+```
+- Create configuration:
+```csharp
+IConfigurationRoot configuration = WritableJsonConfigurationFabric.Create("Settings.json");
+```
+- Use this configuration in the app as you need, usually people register it with the IoC, example([Splat](https://github.com/reactiveui/splat)):
+```csharp
+Locator.CurrentMutable.RegisterConstant(configuration, typeof(IConfiguration));
+```
+- Get value:
+```csharp
+Themes theme = configuration.GetSection("Appearance:Theme").Get<Themes>();
+```
+- Set value:
+```csharp
+configuration.GetSection("Appearance:Theme").Set(theme);
 ```
 
 ## Communication
