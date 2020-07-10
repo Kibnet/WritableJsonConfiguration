@@ -1,5 +1,7 @@
 # WritableJsonConfiguration
 
+<img src="https://github.com/Kibnet/WritableJsonConfiguration/raw/master/resources/JSON_logo.png" alt="JSON" width="180"/>
+
 ![](https://github.com/Kibnet/WritableJsonConfiguration/workflows/NuGet%20Generation/badge.svg?branch=master)
 ![](https://img.shields.io/github/issues/Kibnet/WritableJsonConfiguration.svg?label=Issues)
 ![](https://img.shields.io/github/tag/Kibnet/WritableJsonConfiguration.svg?label=Last%20Version)
