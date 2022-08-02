@@ -15,25 +15,33 @@
 If you want to add a settings to your app and you like json, then this is what you need. This uses the standard interface for working with settings, which is provided by Microsoft.Extensions.Configuration. To do this, we added methods for changing values in settings via the standard interface, which will edit the json file themselves.
 
 ## How to use?
-- Add [Nuget Package](https://www.nuget.org/packages/WritableJsonConfiguration/) in your project:
+### Add [Nuget Package](https://www.nuget.org/packages/WritableJsonConfiguration/) in your project:
 ```
 Install-Package WritableJsonConfiguration
 ```
-- Create configuration:
+### Create configuration:
 ```csharp
 IConfigurationRoot configuration = WritableJsonConfigurationFabric.Create("Settings.json");
 ```
-- Use this configuration in the app as you need, usually people register it with the IoC, example([Splat](https://github.com/reactiveui/splat)):
+### Use this configuration in the app as you need, usually people register it with the IoC, example([Splat](https://github.com/reactiveui/splat)):
 ```csharp
 Locator.CurrentMutable.RegisterConstant(configuration, typeof(IConfiguration));
 ```
-- Get value:
+### Get value:
 ```csharp
 Themes theme = configuration.GetSection("Appearance:Theme").Get<Themes>();
 ```
-- Set value:
+or
+```csharp
+Themes theme = configuration.Get<Themes>("Appearance:Theme");
+```
+### Set value:
 ```csharp
 configuration.GetSection("Appearance:Theme").Set(theme);
+```
+or
+```csharp
+configuration.Set("Appearance:Theme", theme);
 ```
 
 ## Communication
