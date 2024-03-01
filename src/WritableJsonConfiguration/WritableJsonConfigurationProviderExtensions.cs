@@ -25,7 +25,7 @@ namespace Microsoft.Extensions.Configuration
                 }
                 case ConfigurationSection configurationSection:
                 {
-                    var rootProp = typeof(ConfigurationSection).GetField("_root", BindingFlags.NonPublic | BindingFlags.Instance); ;
+                    var rootProp = typeof(ConfigurationSection).GetField("_root", BindingFlags.NonPublic | BindingFlags.Instance);
                     var root = rootProp.GetValue(configurationSection) as IConfigurationRoot;
                     var provider = root.Providers.First(p => p is WritableJsonConfigurationProvider) as WritableJsonConfigurationProvider;
                     provider.Set(configurationSection.Path, value);

@@ -32,13 +32,31 @@ namespace WritableJsonConfiguration
                     var child = jsonObj[currentKey];
                     if (child == null)
                     {
-                        context[currentKey] = new JObject();
+                        if (i + 1 < split.Length && int.TryParse(split[i + 1], out _))
+                        {
+                            context[currentKey] = new JArray();
+                        }
+                        else
+                        {
+                            context[currentKey] = new JObject();
+                        }
                     }
                     context = context[currentKey];
                 }
                 else
                 {
-                    context[currentKey] = value;
+                    if (int.TryParse(currentKey, out var index))
+                    {
+                        if (context is JArray array)
+                        {
+                            if (array.Count - 1 < index)
+                                array.Add(value);
+                            else
+                                array[index] = value;
+                        }
+                    }
+                    else
+                        context[currentKey] = value;
                 }
             }
         }
@@ -71,26 +89,31 @@ namespace WritableJsonConfiguration
             switch (value)
             {
                 case JArray jArray:
-                {
-                    //TODO Realize arrays
-                    break;
-                }
-                case JObject jObject:
-                {
-                    foreach (var propertyInfo in jObject.Properties())
                     {
-                        var propName = propertyInfo.Name;
-                        var currentKey = key == null ? propName : $"{key}:{propName}";
-                        var propValue = propertyInfo.Value;
-                        WalkAndSet(currentKey, propValue, jsonObj);
+                        for (int index = 0; index < jArray.Count; index++)
+                        {
+                            var currentKey = $"{key}:{index}";
+                            var elementValue = jArray[index];
+                            WalkAndSet(currentKey, elementValue, jsonObj);
+                        }
+                        break;
                     }
-                    break;
-                }
+                case JObject jObject:
+                    {
+                        foreach (var propertyInfo in jObject.Properties())
+                        {
+                            var propName = propertyInfo.Name;
+                            var currentKey = key == null ? propName : $"{key}:{propName}";
+                            var propValue = propertyInfo.Value;
+                            WalkAndSet(currentKey, propValue, jsonObj);
+                        }
+                        break;
+                    }
                 case JValue jValue:
-                {
-                    SetValue(key, jValue.ToString(), jsonObj);
-                    break;
-                }
+                    {
+                        SetValue(key, jValue.ToString(), jsonObj);
+                        break;
+                    }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(value));
             }
