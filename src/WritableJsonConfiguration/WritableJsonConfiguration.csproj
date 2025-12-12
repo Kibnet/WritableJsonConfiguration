@@ -5,7 +5,7 @@
     <Authors>Kibnet</Authors>
     <RepositoryUrl>https://github.com/Kibnet/WritableJsonConfiguration</RepositoryUrl>
     <PackageProjectUrl>https://github.com/Kibnet/WritableJsonConfiguration</PackageProjectUrl>
-    <PackageVersion>8.0.0</PackageVersion>
+    <PackageVersion>8.0.1</PackageVersion>
     <Description>Source of configurations in JSON format with the ability to edit values directly from the running application. Based on Microsoft.Extensions.Configuration.</Description>
     <PackageIcon>JSON_logo.png</PackageIcon>
   </PropertyGroup>

@@ -6,7 +6,7 @@ using WritableJsonConfiguration;
 namespace Microsoft.Extensions.Configuration
 {
     public static class WritableJsonConfigurationProviderExtensions
-    {        
+    {
         /// <summary>
         /// Set value for current section
         /// </summary>
@@ -18,19 +18,29 @@ namespace Microsoft.Extensions.Configuration
             switch (configuration)
             {
                 case IConfigurationRoot configurationRoot:
-                {
-                    var provider = configurationRoot.Providers.First(p => p is WritableJsonConfigurationProvider) as WritableJsonConfigurationProvider;
-                    provider.Set(null, value);
-                    break;
-                }
+                    {
+                        foreach (var provider in configurationRoot.Providers)
+                        {
+                            if (provider is WritableJsonConfigurationProvider writableProvider)
+                                writableProvider.Set(null, value);
+                            else
+                                provider.Set(null, value.ToString());
+                        }
+                        break;
+                    }
                 case ConfigurationSection configurationSection:
-                {
-                    var rootProp = typeof(ConfigurationSection).GetField("_root", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var root = rootProp.GetValue(configurationSection) as IConfigurationRoot;
-                    var provider = root.Providers.First(p => p is WritableJsonConfigurationProvider) as WritableJsonConfigurationProvider;
-                    provider.Set(configurationSection.Path, value);
-                    break;
-                }
+                    {
+                        var rootProp = typeof(ConfigurationSection).GetField("_root", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var root = rootProp.GetValue(configurationSection) as IConfigurationRoot;
+                        foreach (var provider in root.Providers)
+                        {
+                            if (provider is WritableJsonConfigurationProvider writableProvider)
+                                writableProvider.Set(configurationSection.Path, value);
+                            else
+                                provider.Set(configurationSection.Path, value.ToString());
+                        }
+                        break;
+                    }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(configuration));
             }
@@ -46,7 +56,7 @@ namespace Microsoft.Extensions.Configuration
         {
             configuration.GetSection(section).Set(value);
         }
-        
+
         /// <summary>
         /// Get object by section
         /// </summary>
