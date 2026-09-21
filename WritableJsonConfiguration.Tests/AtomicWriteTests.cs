@@ -357,6 +357,11 @@ public class AtomicWriteTests : IDisposable
         using var root = (IDisposable)Create();
         var configuration = (IConfigurationRoot)root;
         configuration["Theme"] = "first";
+        var mainPermissions = new FileInfo(SettingsPath).GetAccessControl(AccessControlSections.Access);
+        var backupPermissions = new FileInfo(SettingsPath + ".bak").GetAccessControl(AccessControlSections.Access);
+        Assert.True(AtomicSettingsFile.HaveEquivalentAccess(mainPermissions, backupPermissions),
+            $"Main ACL: {mainPermissions.GetSecurityDescriptorSddlForm(AccessControlSections.Access)}; " +
+            $"backup ACL: {backupPermissions.GetSecurityDescriptorSddlForm(AccessControlSections.Access)}");
         configuration["Theme"] = "second";
         configuration["Theme"] = "third";
         Assert.Equal("third", configuration["Theme"]);
