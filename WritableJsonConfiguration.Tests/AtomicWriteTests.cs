@@ -369,6 +369,8 @@ public class AtomicWriteTests : IDisposable
         var inherited = Security("D:AI(A;ID;FR;;;SY)(A;ID;FA;;;BA)");
         var explicitReversed = Security("D:P(A;;FA;;;BA)(A;;FR;;;SY)");
         Assert.True(AtomicSettingsFile.HaveEquivalentAccess(inherited, explicitReversed));
+        Assert.True(AtomicSettingsFile.HaveEquivalentAccess(
+            Security("D:P(A;OICINP;FR;;;SY)"), Security("D:P(A;;FR;;;SY)")));
         Assert.False(AtomicSettingsFile.HaveEquivalentAccess(inherited, Security("D:P(A;;FA;;;BA)(A;;FA;;;SY)")));
         Assert.False(AtomicSettingsFile.HaveEquivalentAccess(inherited, Security("D:P(A;;FA;;;BA)(A;;FR;;;WD)")));
         Assert.False(AtomicSettingsFile.HaveEquivalentAccess(inherited, Security("D:P(A;;FA;;;BA)(A;IO;FR;;;SY)")));

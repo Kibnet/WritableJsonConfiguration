@@ -38,3 +38,17 @@ jobs:
     - name: Push nuget packages to GitHub registry
       if: github.event_name == 'push'
       run: dotnet nuget push ./out/*.nupkg --skip-duplicate --no-symbols -s "github"
+
+  windows-tests:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore
+      run: dotnet restore
+    - name: Test Windows atomic writes
+      run: dotnet test --configuration Release --no-restore

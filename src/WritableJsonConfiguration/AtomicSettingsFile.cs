@@ -77,9 +77,11 @@ namespace WritableJsonConfiguration
             for (int index = 0; index < dacl.Count; index++)
             {
                 var ace = dacl[index];
-                // Windows removes inherited provenance and reorders allow ACEs when persisting
-                // a protected copy. Neither changes access. Never reorder deny across allow:
-                // their relative position can change effective permissions.
+                // Windows removes inherited provenance and can normalize propagation flags when
+                // persisting an ACL on a file. Those flags only control inheritance by children;
+                // a file cannot have children. InheritOnly still changes access to this file and
+                // must remain significant. Never reorder deny across allow: their relative
+                // position can change effective permissions.
                 var common = ace as CommonAce;
                 bool canReorder = common != null && !common.IsCallback &&
                     (common.AceQualifier == AceQualifier.AccessAllowed || common.AceQualifier == AceQualifier.AccessDenied);
@@ -92,7 +94,9 @@ namespace WritableJsonConfiguration
                 var bytes = new byte[ace.BinaryLength];
                 ace.GetBinaryForm(bytes, 0);
                 var normalized = GenericAce.CreateFromBinaryForm(bytes, 0);
-                if (canReorder) normalized.AceFlags &= ~AceFlags.Inherited;
+                if (canReorder)
+                    normalized.AceFlags &= ~(AceFlags.Inherited | AceFlags.ObjectInherit |
+                        AceFlags.ContainerInherit | AceFlags.NoPropagateInherit);
                 normalized.GetBinaryForm(bytes, 0);
                 group.Add(Convert.ToBase64String(bytes));
             }
