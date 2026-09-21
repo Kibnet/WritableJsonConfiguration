@@ -71,6 +71,11 @@ namespace WritableJsonConfiguration
                 }
                 else // Если последний элемент пути, устанавливаем значение
                 {
+                    if (!publishData)
+                    {
+                        SetAtomicLeaf((JToken)context, currentKey, value);
+                        continue;
+                    }
                     if (int.TryParse(currentKey, out var index)) // Обработка индекса массива
                     {
                         if (context is JArray array)
@@ -172,7 +177,9 @@ namespace WritableJsonConfiguration
             {
                 if (!int.TryParse(key, out var index) || index < 0)
                     throw new ArgumentException("Configuration array path requires a non-negative index.");
-                if (index < array.Count) return array[index];
+                if (index < array.Count) return RequireAtomicContainer(array[index]);
+                if (index > array.Count)
+                    throw new ArgumentException("Sparse configuration array indexes are not supported.");
                 JToken child = nextIsArrayIndex ? (JToken)new JArray() : new JObject();
                 // Preserve the existing append/merge behavior rather than truncating array tails.
                 array.Add(child);
@@ -180,10 +187,36 @@ namespace WritableJsonConfiguration
             }
 
             var existing = context[key];
-            if (existing != null) return existing;
+            if (existing != null) return RequireAtomicContainer(existing);
             JToken created = nextIsArrayIndex ? (JToken)new JArray() : new JObject();
             context[key] = created;
             return created;
+        }
+
+        private static JToken RequireAtomicContainer(JToken token)
+        {
+            if (token is JObject || token is JArray) return token;
+            throw new ArgumentException("Configuration path cannot continue through a scalar value.");
+        }
+
+        private static void SetAtomicLeaf(JToken context, string key, string value)
+        {
+            if (context is JObject objectContext)
+            {
+                // Numeric property names are valid object keys; only arrays interpret them as indexes.
+                objectContext[key] = value;
+                return;
+            }
+
+            if (context is JArray arrayContext && int.TryParse(key, out var index) && index >= 0)
+            {
+                if (index < arrayContext.Count) arrayContext[index] = value;
+                else if (index == arrayContext.Count) arrayContext.Add(value);
+                else throw new ArgumentException("Sparse configuration array indexes are not supported.");
+                return;
+            }
+
+            throw new ArgumentException("Configuration path does not match its JSON container.");
         }
 
         private void SetAtomically(Action<JObject> edit)

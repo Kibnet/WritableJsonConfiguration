@@ -65,6 +65,8 @@ the main file. No-op saves do not rotate the backup. Memory is published after t
 file commit; ambiguous I/O errors reread disk and block further writes if reconciliation
 fails. Restart the application or recreate the configuration root before trying
 again in that case; calling `Reload()` on the same root does not unblock writes.
+Numeric path segments remain property names inside JSON objects. Inside arrays they
+are indexes; sparse indexes are rejected rather than redirected to another element.
 
 Temporary files receive the source file's restricted Windows access permissions
 before any settings bytes are written. Existing main/backup permission differences

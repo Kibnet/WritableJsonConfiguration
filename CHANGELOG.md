@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 8.1.1 - 2026-09-21
+
+### Fixed
+
+- Treat numeric path segments as property names when their current JSON container is an object.
+- Reject sparse array indexes in atomic mode instead of silently appending at a different index.
+- Reject paths that attempt to continue through an existing scalar value.
+
 ## 8.1.0 - 2026-09-21
 
 ### Added
