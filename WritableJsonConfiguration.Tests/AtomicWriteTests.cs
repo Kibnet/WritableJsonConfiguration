@@ -106,6 +106,63 @@ public class AtomicWriteTests : IDisposable
         Assert.Equal("kept", ((IConfigurationRoot)reloaded)["A:B:Items:1:Tail"]);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AtomicNumericObjectKeysRemainObjectProperties(bool objectOverload)
+    {
+        File.WriteAllText(SettingsPath, "{\"Years\":{\"2024\":\"old\",\"Label\":\"kept\"}}");
+        using var root = (IDisposable)Create();
+        var configuration = (IConfigurationRoot)root;
+        if (objectOverload) configuration.Set("Years:2024", (object)"new");
+        else configuration["Years:2024"] = "new";
+
+        Assert.Equal("new", configuration["Years:2024"]);
+        Assert.Equal("kept", configuration["Years:Label"]);
+        var disk = JObject.Parse(File.ReadAllText(SettingsPath));
+        Assert.Equal(JTokenType.Object, disk["Years"]!.Type);
+        Assert.Equal("new", disk["Years"]!["2024"]!.Value<string>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AtomicSparseArrayIndexesAreRejectedWithoutWritingAnotherIndex(bool objectOverload)
+    {
+        const string original = "{\"Items\":[],\"Outside\":\"kept\"}";
+        File.WriteAllText(SettingsPath, original);
+        using var root = (IDisposable)Create();
+        var configuration = (IConfigurationRoot)root;
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            if (objectOverload) configuration.Set("Items:2", new { Name = "new" });
+            else configuration["Items:2:Name"] = "new";
+        });
+
+        Assert.Null(configuration["Items:0:Name"]);
+        Assert.Null(configuration["Items:2:Name"]);
+        Assert.Equal("kept", configuration["Outside"]);
+        Assert.True(JToken.DeepEquals(JObject.Parse(original), JObject.Parse(File.ReadAllText(SettingsPath))));
+        Assert.False(File.Exists(SettingsPath + ".bak"));
+    }
+
+    [Fact]
+    public void AtomicPathsCannotContinueThroughExistingScalarValues()
+    {
+        const string original = "{\"Theme\":\"old\"}";
+        File.WriteAllText(SettingsPath, original);
+        using var root = (IDisposable)Create();
+        var configuration = (IConfigurationRoot)root;
+
+        Assert.Throws<ArgumentException>(() => configuration["Theme:Nested"] = "new");
+
+        Assert.Equal("old", configuration["Theme"]);
+        Assert.Null(configuration["Theme:Nested"]);
+        Assert.Equal(original, File.ReadAllText(SettingsPath));
+        Assert.False(File.Exists(SettingsPath + ".bak"));
+    }
+
     [Fact]
     public void DefaultRemainsLegacyAndDoesNotCreateBackup()
     {
