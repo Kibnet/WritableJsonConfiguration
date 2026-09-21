@@ -4,8 +4,11 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    types: [closed]
     branches: [ master ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build:
@@ -18,13 +21,20 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    - name: Install dependencies
+    - name: Restore
       run: dotnet restore
-    - name: Pack solution
-      run: dotnet pack --configuration Release -o out --no-restore    
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --configuration Release --no-build --no-restore
+    - name: Pack library
+      run: dotnet pack src/WritableJsonConfiguration/WritableJsonConfiguration.csproj --configuration Release -o out --no-build --no-restore
     - name: Push nuget packages to Nuget registry
+      if: github.event_name == 'push'
       run: dotnet nuget push ./out/*.nupkg --skip-duplicate --no-symbols -k ${{secrets.NUGET_TOKEN}} -s https://api.nuget.org/v3/index.json
     - name: Add GitHub registry as nuget source
+      if: github.event_name == 'push'
       run: dotnet nuget add source https://nuget.pkg.github.com/kibnet/index.json --name github --username kibnet --password ${{secrets.GITHUB_TOKEN}} --store-password-in-clear-text
     - name: Push nuget packages to GitHub registry
+      if: github.event_name == 'push'
       run: dotnet nuget push ./out/*.nupkg --skip-duplicate --no-symbols -s "github"

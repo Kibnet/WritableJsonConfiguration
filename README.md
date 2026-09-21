@@ -44,5 +44,38 @@ or
 configuration.Set("Appearance:Theme", theme);
 ```
 
+## Opt-in atomic writes on Windows
+
+```csharp
+IConfigurationRoot configuration = WritableJsonConfigurationFabric.Create(source =>
+{
+    source.Path = "Settings.json";
+    source.Optional = true;
+    source.ReloadOnChange = false;
+    source.UseAtomicWrites = true;
+    source.ResolveFileProvider();
+});
+```
+
+`UseAtomicWrites` defaults to `false`, preserving the previous API and platform behavior.
+When enabled, both `Set` overloads serialize writes to the same physical path within
+the process. A complete, parser-validated temporary file is flushed and replaces the
+main file; `.bak` contains the previous readable version. A first save creates only
+the main file. No-op saves do not rotate the backup. Memory is published after the
+file commit; ambiguous I/O errors reread disk and block further writes if reconciliation
+fails. Restart the application or recreate the configuration root before trying
+again in that case; calling `Reload()` on the same root does not unblock writes.
+
+Temporary files receive the source file's restricted Windows access permissions
+before any settings bytes are written. Existing main/backup permission differences
+that cannot safely be preserved cause an error, not a broader copy. The first file
+uses the containing directory's permissions. Other operating systems reject explicit
+opt-in with `PlatformNotSupportedException`; the default mode remains available.
+
+This does not recover an already corrupt file, coordinate multiple processes, make a
+series of `Set` calls transactional, or guarantee survival of arbitrary hardware
+failure. Applications should validate/recover settings before loading configuration.
+Backups and leftover temporary files may contain secrets and must not be published.
+
 ## Communication
 Any suggestions and comments are welcome. If you want to contact me, use [Telegram](https://t.me/kibnet)

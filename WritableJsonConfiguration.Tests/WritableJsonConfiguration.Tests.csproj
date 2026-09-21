@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\WritableJsonConfiguration\WritableJsonConfiguration.csproj" />
+    <ProjectReference Include="..\WritableJsonConfiguration.CrashHarness\WritableJsonConfiguration.CrashHarness.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>
