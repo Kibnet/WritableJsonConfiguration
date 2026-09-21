@@ -10,7 +10,7 @@
     <PackageIcon>JSON_logo.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Fix atomic-path handling for numeric object keys and reject sparse array indexes instead of writing a different index.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix false atomic-write ACL mismatches after Windows normalizes equivalent file access entries during File.Replace.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

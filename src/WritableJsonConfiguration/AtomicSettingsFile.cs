@@ -108,7 +108,20 @@ namespace WritableJsonConfiguration
         {
             if (group.Count == 0) return;
             group.Sort(StringComparer.Ordinal);
-            result.Append(type).Append(':').Append(string.Join(",", group)).Append(';');
+            result.Append(type).Append(':');
+            string previous = null;
+            bool appended = false;
+            foreach (var entry in group)
+            {
+                // File.Replace can retain the same effective ACE once as explicit and once as
+                // inherited. After provenance normalization, exact duplicates do not change access.
+                if (entry == previous) continue;
+                if (appended) result.Append(',');
+                result.Append(entry);
+                previous = entry;
+                appended = true;
+            }
+            result.Append(';');
             group.Clear();
         }
     }
